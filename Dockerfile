@@ -23,8 +23,8 @@ ENV CPANM cpanm --quiet --notest --skip-satisfied
 
 # Software installation
 RUN yum -y -q update && yum clean all
-ADD rpm_list /rpm_list
-RUN yum -y -q install `cat /rpm_list` && yum clean all
+RUN yum -y install fcgi-perl mysql gcc perl-core perl-App-cpanminus perl-CPAN mod_perl-devel && \
+    yum clean all
 
 # Clone the code repo
 RUN git clone $GITHUB_BASE_GIT -b $GITHUB_BASE_BRANCH $BUGZILLA_HOME
