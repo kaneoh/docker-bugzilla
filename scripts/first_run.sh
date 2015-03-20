@@ -52,6 +52,87 @@ EOF
 
 }
 
+install_bugzilla() {
+cat > /etc/supervisor/conf.d/bugzilla.conf <<EOF
+[program:fastcgi_wrapper]
+process_name=%(program_name)s_%(process_num)02d
+numprocs=2
+;socket=tcp://127.0.0.1:8999
+;socket=unix:///var/run/fastcgi-wrapper/fastcgi-wrapper.sock
+;socket_mode=0777
+command=/scripts/fastcgi-wrapper.pl
+user=nginx
+group=nginx
+stdout_logfile=/home/bugzilla/fastcgi_wrapper.log
+stderr_logfile=/home/bugzilla/fastcgi_wrapper.err
+redirect_stderr=true
+priority=1000
+autostart=true
+autorestart=true
+
+[program:nginx]
+priority=100
+command=/usr/sbin/nginx
+
+EOF
+
+cat > /etc/nginx/sites-enabled/default <<EOF
+server {
+  listen        80;
+  server_name   $VIRTUAL_HOST;
+
+  access_log /home/bugzilla/access.log;
+  error_log  /home/bugzilla/error.log;
+
+  root       /home/bugzilla/www;
+  index      index.cgi index.txt index.html index.xhtml;
+
+  location / {
+    autoindex off;
+  }
+
+  location ~ ^.*\.cgi$ {
+    try_files \$uri =404;
+    gzip off;
+
+    # fastcgi_pass  unix:/var/run/fastcgi-wrapper/fastcgi-wrapper.sock;
+    fastcgi_pass  127.0.0.1:8999;
+    fastcgi_index index.cgi;
+
+    fastcgi_param  QUERY_STRING       \$query_string;
+    fastcgi_param  REQUEST_METHOD     \$request_method;
+    fastcgi_param  CONTENT_TYPE       \$content_type;
+    fastcgi_param  CONTENT_LENGTH     \$content_length;
+
+    fastcgi_param  SCRIPT_FILENAME    \$document_root\$fastcgi_script_name;
+    fastcgi_param  SCRIPT_NAME        \$fastcgi_script_name;
+    fastcgi_param  REQUEST_URI        \$request_uri;
+    fastcgi_param  DOCUMENT_URI       \$document_uri;
+    fastcgi_param  DOCUMENT_ROOT      \$document_root;
+    fastcgi_param  SERVER_PROTOCOL    \$server_protocol;
+
+    fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+    fastcgi_param  SERVER_SOFTWARE    nginx/\$nginx_version;
+
+    fastcgi_param  REMOTE_ADDR        \$remote_addr;
+    fastcgi_param  REMOTE_PORT        \$remote_port;
+    fastcgi_param  SERVER_ADDR        \$server_addr;
+    fastcgi_param  SERVER_PORT        \$server_port;
+    fastcgi_param  SERVER_NAME        \$server_name;
+  }
+}
+EOF
+cat > /home/bugzilla/localconfig <<EOF
+\$create_htaccess = 1;
+\$webservergroup = 'nginx';
+\$use_suexec = 0;
+\$index_html = 0;
+\$interdiffbin = '';
+\$diffpath = '/usr/bin';
+\$site_wide_secret = 'KDKOJKYNhrURHOjdgRK7ORlLleXmJO6gRP5U2LCB59kMRIQK9sBfs7a3huyTZxnh';
+EOF
+}
+
 check_mysql() {
   echo "mysql: $MYSQL_ENV_USER:$MYSQL_ENV_PASS@$MYSQL_PORT_3306_TCP_ADDR:$MYSQL_PORT_3306_TCP_PORT"
   RET=1
@@ -74,10 +155,42 @@ check_mysql() {
     RET=$?
     echo "mysql status is $RET"
   done
+    echo "starting installation"
+  if [ -z "$MYSQL_ENV_PASS" ]; then
+      echo "no linked mysql detected"
+  else
+    echo "linked mysql detected with container id $HOSTNAME and version $MYSQL_ENV_MYSQL_VERSION"
+    DB_TYPE=link_mysql
+  fi
+
+  echo 'using linked mysql'
+  MYSQL_HOST=`echo $MYSQL_NAME | /bin/awk -F "/" '{print $3}'`
+  echo "MySQL host is $MYSQL_HOST"
+  if [ -z "$MYSQL_USER" ]; then
+      echo "set MySQL user default to: $MYSQL_ENV_USER"
+      MYSQL_USER=$MYSQL_ENV_USER
+  fi
+      cat >> /home/bugzilla/localconfig <<EOL
+\$db_driver = 'mysql';
+\$db_host = '$MYSQL_HOST';
+\$db_name = 'bugs';
+\$db_user = '$MYSQL_USER';
+\$db_pass = '$MYSQL_ENV_PASS';
+\$db_port = '$MYSQL_ENV';
+\$db_sock = '$MYSQL_PORT_3306_TCP_PORT';
+\$db_check = 1;
+\$db_mysql_ssl_ca_file = '';
+\$db_mysql_ssl_ca_path = '';
+\$db_mysql_ssl_client_cert = '';
+\$db_mysql_ssl_client_key = '';
+EOL
+
 }
 
 pre_start_action() {
   install_supervisor
+  install_bugzilla
+  check_mysql
 }
 
 post_start_action() {

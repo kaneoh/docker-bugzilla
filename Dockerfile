@@ -23,7 +23,7 @@ ENV CPANM cpanm --quiet --notest --skip-satisfied
 
 # Software installation
 RUN yum -y -q update && yum clean all
-RUN yum -y install git fcgi-perl mariadb mariadb-devel mariadb-libs gcc perl-core perl-App-cpanminus perl-CPAN mod_perl-devel && \
+RUN yum -y install tar zip gzip bzip2 git fcgi-perl mariadb mariadb-devel mariadb-libs gcc perl-core perl-App-cpanminus perl-CPAN mod_perl-devel && \
     yum clean all
 
 # Clone the code repo
@@ -50,10 +50,12 @@ RUN cd $BUGZILLA_HOME \
     && $CPANM JSON::XS \
     && $CPANM Pod::Coverage \
     && $CPANM --installdeps --with-recommends . \
-    && chown -R apache:apache $BUGZILLA_HOME
+    && chown -R nginx:nginx $BUGZILLA_HOME
 
 ADD scripts /scripts
+
 RUN chmod +x /scripts/*.sh && \
+    chmod +x /scripts/fastcgi-wrapper.pl && \
     touch /first_run
 
 # Expose our web root and log directories log.
