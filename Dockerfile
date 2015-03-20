@@ -13,7 +13,7 @@ ENV BUGZILLA_HOME /home/bugzilla
 ENV BUGZILLA_URL http://localhost/bugzilla
 
 ENV GITHUB_BASE_GIT https://github.com/bugzilla/bugzilla
-ENV GITHUB_BASE_BRANCH 4.4
+ENV GITHUB_BASE_BRANCH 5.0
 ENV GITHUB_QA_GIT https://github.com/bugzilla/qa
 
 ENV ADMIN_EMAIL admin@bugzilla.org
@@ -48,6 +48,8 @@ RUN cd $BUGZILLA_HOME \
     && $CPANM Software::License \
     && $CPANM Test::WWW::Selenium \
     && $CPANM Text::Markdown \
+    && $CPANM JSON::XS \
+    && $CPANM Pod::Coverage \
     && $CPANM --installdeps --with-recommends . \
     && chown -R apache:apache $BUGZILLA_HOME
 
