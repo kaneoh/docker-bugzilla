@@ -23,7 +23,7 @@ ENV CPANM cpanm --quiet --notest --skip-satisfied
 
 # Software installation
 RUN yum -y -q update && yum clean all
-RUN yum -y install git fcgi-perl mysql gcc perl-core perl-App-cpanminus perl-CPAN mod_perl-devel && \
+RUN yum -y install git fcgi-perl mariadb mariadb-devel mariadb-libs gcc perl-core perl-App-cpanminus perl-CPAN mod_perl-devel && \
     yum clean all
 
 # Clone the code repo
