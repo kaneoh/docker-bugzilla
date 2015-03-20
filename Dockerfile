@@ -34,7 +34,6 @@ RUN git clone $GITHUB_BASE_GIT -b $GITHUB_BASE_BRANCH $BUGZILLA_HOME
 RUN cd $BUGZILLA_HOME \
     && $CPANM Apache2::SizeLimit \
     && $CPANM Cache::Memcached \
-    && $CPANM DBD::mysql \
     && $CPANM Email::Sender \
     && $CPANM File::Copy::Recursive \
     && $CPANM File::Which \
