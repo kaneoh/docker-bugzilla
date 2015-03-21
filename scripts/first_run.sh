@@ -178,11 +178,11 @@ check_mysql() {
       MYSQL_USER=$MYSQL_ENV_USER
   fi
 
-  echo "Creating database \"$db\"..."
+  echo "Creating database \"${DB_NAME}\"..."
   mysql -u$MYSQL_ENV_USER -p$MYSQL_ENV_PASS \
         -h$MYSQL_PORT_3306_TCP_ADDR \
         -P$MYSQL_PORT_3306_TCP_PORT \
-        -e "CREATE DATABASE IF NOT EXISTS '${DB_NAME}' DEFAULT CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci';"
+        -e "CREATE DATABASE IF NOT EXISTS ${DB_NAME} DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;"
   echo "Granting access to database \"${DB_NAME}\" for user \"${DB_USER}\"..."
   mysql -u$MYSQL_ENV_USER -p$MYSQL_ENV_PASS \
         -h$MYSQL_PORT_3306_TCP_ADDR \
