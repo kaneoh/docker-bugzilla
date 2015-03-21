@@ -137,7 +137,7 @@ EOF
 \$answer{'index_html'} = 0;
 \$answer{'interdiffbin'} = '/usr/bin/interdiff';
 \$answer{'memcached_servers'} = "localhost:11211";
-\$answer{'urlbase'} = 'http://localhost:8080/bugzilla/';
+\$answer{'urlbase'} = '$VIRTUAL_HOST';
 \$answer{'use_suexec'} = '';
 \$answer{'webservergroup'} = 'bugzilla';
 EOF
@@ -214,10 +214,20 @@ check_mysql() {
 EOL
 }
 
+install_memcached() {
+  cat > /etc/supervisor/conf.d/memcached.conf <<EOF
+[program:memcached]
+command=/usr/bin/memcached -u memcached
+stderr_logfile=/var/log/supervisor/memcached.log
+stdout_logfile=/var/log/supervisor/memcached.log
+
+EOF
+}
 pre_start_action() {
   install_supervisor
   install_bugzilla
   check_mysql
+  install_memcached
 
   cd $BUGZILLA_HOME
   perl checksetup.pl checksetup_answers.txt
