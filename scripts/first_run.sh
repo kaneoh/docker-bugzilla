@@ -53,18 +53,20 @@ EOF
 }
 
 install_bugzilla() {
-cat > /etc/supervisor/conf.d/bugzilla.conf <<EOF
+  mkdir -p $LOG_DIR/nginx
+  mkdir -p $LOG_DIR/bugzilla
+  cat > /etc/supervisor/conf.d/bugzilla.conf <<EOF
 [program:fastcgi_wrapper]
 process_name=%(program_name)s_%(process_num)02d
-numprocs=2
+numprocs=1
 ;socket=tcp://127.0.0.1:8999
 ;socket=unix:///var/run/fastcgi-wrapper/fastcgi-wrapper.sock
 ;socket_mode=0777
 command=/scripts/fastcgi-wrapper.pl
 user=nginx
 group=nginx
-stdout_logfile=/home/bugzilla/fastcgi_wrapper.log
-stderr_logfile=/home/bugzilla/fastcgi_wrapper.err
+stdout_logfile=/var/log/bugzilla/fastcgi_wrapper.log
+stderr_logfile=/var/log/bugzilla/fastcgi_wrapper.err
 redirect_stderr=true
 priority=1000
 autostart=true
@@ -81,8 +83,8 @@ server {
   listen        80;
   server_name   $VIRTUAL_HOST;
 
-  access_log /home/bugzilla/access.log;
-  error_log  /home/bugzilla/error.log;
+  access_log /var/log/bugzilla/access.log;
+  error_log  /var/log/bugzilla/error.log;
 
   root       /home/bugzilla/www;
   index      index.cgi index.txt index.html index.xhtml;
