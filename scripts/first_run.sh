@@ -54,6 +54,7 @@ command=/usr/sbin/nginx
 
 EOF
 
+  rm -rf /etc/nginx/sites-enabled/no-default
   cat > /etc/nginx/sites-enabled/default <<EOF
 server {
   listen        80;
