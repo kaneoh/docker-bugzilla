@@ -1,27 +1,3 @@
-install_smtp() {
-  touch /etc/msmtprc
-  mkdir -p $LOG_DIR/msmtp
-  chown nginx:nginx $LOG_DIR/msmtp
-  cat > /etc/msmtprc <<EOF
-# The SMTP server of the provider.
-defaults
-logfile $LOG_DIR/msmtp/msmtplog
-
-account mail
-host $SMTP_HOST
-port $SMTP_PORT
-user $SMTP_USER
-password $SMTP_PASS
-auth login
-tls on
-tls_trust_file /etc/pki/tls/certs/ca-bundle.crt
-
-account default : mail
-
-EOF
-  chmod 600 /etc/msmtprc
-}
-
 install_supervisor () {
     mkdir -p $LOG_DIR/supervisor
     mkdir -p /etc/supervisor/conf.d
