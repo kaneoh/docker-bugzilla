@@ -230,7 +230,7 @@ pre_start_action() {
   install_memcached
 
   cd $BUGZILLA_HOME
-  perl checksetup.pl checksetup_answers.txt
+  perl checksetup.pl /tmp/checksetup_answers.txt
 }
 
 post_start_action() {
