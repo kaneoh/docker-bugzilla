@@ -3,12 +3,6 @@ MAINTAINER Zhiguang Li <muzili@gmail.com>
 
 # Environment configuration
 ENV container docker
-ENV BUGS_DB_DRIVER mysql
-ENV BUGS_DB_NAME bugs
-ENV BUGS_DB_PASS bugs
-ENV BUGS_DB_HOST localhost
-
-ENV BUGZILLA_USER bugzilla
 ENV BUGZILLA_HOME /home/bugzilla
 ENV BUGZILLA_URL http://localhost/bugzilla
 

@@ -115,7 +115,7 @@ EOF
 \$answer{'memcached_servers'} = "localhost:11211";
 \$answer{'urlbase'} = '$VIRTUAL_HOST';
 \$answer{'use_suexec'} = '';
-\$answer{'webservergroup'} = 'bugzilla';
+\$answer{'webservergroup'} = 'nginx';
 EOF
 
 }
