@@ -78,7 +78,7 @@ command=/usr/sbin/nginx
 
 EOF
 
-cat > /etc/nginx/sites-enabled/default <<EOF
+  cat > /etc/nginx/sites-enabled/default <<EOF
 server {
   listen        80;
   server_name   $VIRTUAL_HOST;
@@ -86,7 +86,7 @@ server {
   access_log /var/log/bugzilla/access.log;
   error_log  /var/log/bugzilla/error.log;
 
-  root       /home/bugzilla/www;
+  root       ${BUGZILLA_HOME};
   index      index.cgi index.txt index.html index.xhtml;
 
   location / {
@@ -124,15 +124,24 @@ server {
   }
 }
 EOF
-cat > /home/bugzilla/localconfig <<EOF
-\$create_htaccess = 1;
-\$webservergroup = 'nginx';
-\$use_suexec = 0;
-\$index_html = 0;
-\$interdiffbin = '';
-\$diffpath = '/usr/bin';
-\$site_wide_secret = 'KDKOJKYNhrURHOjdgRK7ORlLleXmJO6gRP5U2LCB59kMRIQK9sBfs7a3huyTZxnh';
+  cat > /tmp/checksetup_answers.txt <<EOF
+\$answer{'SMTP_SERVER'} = '$SMTP_HOST';
+\$answer{'ADMIN_EMAIL'} = '$ADMIN_EMAIL';
+\$answer{'ADMIN_OK'} = '$ADMIN_OK';
+\$answer{'ADMIN_PASSWORD'} = '$ADMIN_PASSWORD';
+\$answer{'ADMIN_REALNAME'} = '$ADMIN_REALNAME';
+\$answer{'NO_PAUSE'} = 1;
+\$answer{'create_htaccess'} = '';
+\$answer{'cvsbin'} = '/usr/bin/cvs';
+\$answer{'diffpath'} = '/usr/bin';
+\$answer{'index_html'} = 0;
+\$answer{'interdiffbin'} = '/usr/bin/interdiff';
+\$answer{'memcached_servers'} = "localhost:11211";
+\$answer{'urlbase'} = 'http://localhost:8080/bugzilla/';
+\$answer{'use_suexec'} = '';
+\$answer{'webservergroup'} = 'bugzilla';
 EOF
+
 }
 
 check_mysql() {
@@ -189,27 +198,29 @@ check_mysql() {
         -P$MYSQL_PORT_3306_TCP_PORT \
         -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}' IDENTIFIED BY '${DB_PASS}';"
 
-  cat >> /home/bugzilla/localconfig <<EOL
-\$db_driver = 'mysql';
-\$db_host = '$MYSQL_HOST';
-\$db_name = '$DB_NAME';
-\$db_user = '$DB_USER';
-\$db_pass = '$DB_PASS';
-\$db_port = '$MYSQL_PORT_3306_TCP_PORT';
-\$db_sock = '';
-\$db_check = 1;
-\$db_mysql_ssl_ca_file = '';
-\$db_mysql_ssl_ca_path = '';
-\$db_mysql_ssl_client_cert = '';
-\$db_mysql_ssl_client_key = '';
+  cat >> /tmp/checksetup_answers.txt <<EOL
+\$answer{'db_check'} = 1;
+\$answer{'db_driver'} = 'mysql';
+\$answer{'db_host'} = '$MYSQL_HOST';
+\$answer{'db_mysql_ssl_ca_file'} = '';
+\$answer{'db_mysql_ssl_ca_path'} = '';
+\$answer{'db_mysql_ssl_client_cert'} = '';
+\$answer{'db_mysql_ssl_client_key'} = '';
+\$answer{'db_name'} = '$DB_NAME',
+\$answer{'db_pass'} = '$DB_PASS';
+\$answer{'db_port'} = $MYSQL_PORT_3306_TCP_PORT;
+\$answer{'db_sock'} = '';
+\$answer{'db_user'} = '$DB_USER';
 EOL
-
 }
 
 pre_start_action() {
   install_supervisor
   install_bugzilla
   check_mysql
+
+  cd $BUGZILLA_HOME
+  perl checksetup.pl checksetup_answers.txt
 }
 
 post_start_action() {

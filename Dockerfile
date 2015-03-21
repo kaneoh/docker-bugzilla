@@ -19,7 +19,7 @@ ENV GITHUB_QA_GIT https://github.com/bugzilla/qa
 ENV ADMIN_EMAIL admin@bugzilla.org
 ENV ADMIN_PASS password
 ENV TEST_SUITE sanity
-ENV CPANM cpanm --quiet --notest --skip-satisfied
+ENV CPANM perl $BUGZILLA_HOME/install-module.pl
 
 # Software installation
 RUN yum -y -q update && yum clean all
@@ -32,6 +32,7 @@ RUN git clone $GITHUB_BASE_GIT -b $GITHUB_BASE_BRANCH $BUGZILLA_HOME
 # Install Perl dependencies
 # Some modules are explicitly installed due to strange dependency issues
 RUN cd $BUGZILLA_HOME \
+    && $CPANM DBD::mysql \
     && $CPANM Apache2::SizeLimit \
     && $CPANM Cache::Memcached \
     && $CPANM Email::Sender \
@@ -49,7 +50,6 @@ RUN cd $BUGZILLA_HOME \
     && $CPANM Text::Markdown \
     && $CPANM JSON::XS \
     && $CPANM Pod::Coverage \
-    && $CPANM --installdeps --with-recommends . \
     && chown -R nginx:nginx $BUGZILLA_HOME
 
 ADD scripts /scripts
