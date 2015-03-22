@@ -1,0 +1,42 @@
+From 197104fe8600f4edf517ec2f9cbd95404b3afb73 Mon Sep 17 00:00:00 2001
+From: Joshua Lee <muzili@gmail.com>
+Date: Sun, 22 Mar 2015 07:56:30 +0000
+Subject: [PATCH] Fix the ldap login error
+
+---
+ Bugzilla/Auth/Verify/LDAP.pm | 2 +-
+ contrib/syncLDAP.pl          | 5 ++++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/Bugzilla/Auth/Verify/LDAP.pm b/Bugzilla/Auth/Verify/LDAP.pm
+index e37f557..10c5f35 100644
+--- a/Bugzilla/Auth/Verify/LDAP.pm
++++ b/Bugzilla/Auth/Verify/LDAP.pm
+@@ -129,7 +129,7 @@ sub _bz_search_params {
+     $username = escape_filter_value($username);
+     return (base   => Bugzilla->params->{"LDAPBaseDN"},
+             scope  => "sub",
+-            filter => '(&(' . Bugzilla->params->{"LDAPuidattribute"} 
++            filter => '(&(' . Bugzilla->params->{"LDAPmailattribute"} 
+                       . "=$username)"
+                       . Bugzilla->params->{"LDAPfilter"} . ')');
+ }
+diff --git a/contrib/syncLDAP.pl b/contrib/syncLDAP.pl
+index f618624..c6fc84a 100755
+--- a/contrib/syncLDAP.pl
++++ b/contrib/syncLDAP.pl
+@@ -129,7 +129,10 @@ if(! $mesg->count) {
+ my %val = %{ $mesg->as_struct };
+ 
+ while( my ($key, $value) = each(%val) ) {
+-
++   if (! exists $value->{Bugzilla->params->{"LDAPmailattribute"}}) {
++      print "$key has no valid mail address\n";
++      next; 
++   }
+    my @login_name = @{ $value->{Bugzilla->params->{"LDAPmailattribute"}} };
+    my @realname  = @{ $value->{"cn"} };
+ 
+-- 
+1.8.3.1
+

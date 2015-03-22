@@ -114,7 +114,7 @@ EOF
 \$answer{'index_html'} = 0;
 \$answer{'interdiffbin'} = '/usr/bin/interdiff';
 \$answer{'memcached_servers'} = "localhost:11211";
-\$answer{'urlbase'} = '';
+\$answer{'urlbase'} = '$VIRTUAL_HOST';
 \$answer{'use_suexec'} = '';
 \$answer{'webservergroup'} = 'nginx';
 EOF

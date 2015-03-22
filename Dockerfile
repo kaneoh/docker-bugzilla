@@ -21,7 +21,10 @@ RUN yum -y install memcached gcc-c++ gd-devel tar zip gzip bzip2 git fcgi-perl m
     yum clean all
 
 # Clone the code repo
-RUN git clone $GITHUB_BASE_GIT -b $GITHUB_BASE_BRANCH $BUGZILLA_HOME
+ADD files /files
+RUN git clone $GITHUB_BASE_GIT -b $GITHUB_BASE_BRANCH $BUGZILLA_HOME &&
+    cd $BUGZILLA_HOME
+    patch -p1 < /files/0001-Fix-the-ldap-login-error.patch
 
 # Install Perl dependencies
 # Some modules are explicitly installed due to strange dependency issues
