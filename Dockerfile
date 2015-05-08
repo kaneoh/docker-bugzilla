@@ -1,4 +1,4 @@
-FROM muzili/centos-nginx
+FROM muzili/centos-base
 MAINTAINER Zhiguang Li <muzili@gmail.com>
 
 # Environment configuration
@@ -17,7 +17,7 @@ ENV CPANM perl $BUGZILLA_HOME/install-module.pl
 
 # Software installation
 RUN yum -y -q update && yum clean all
-RUN yum -y install httpd memcached gcc-c++ gd-devel tar zip gzip bzip2 git fcgi-perl mariadb mariadb-devel mariadb-libs gcc perl-core perl-App-cpanminus perl-CPAN mod_perl-devel && \
+RUN yum -y install curl wget unzip httpd memcached gcc-c++ gd-devel tar zip gzip bzip2 git fcgi-perl mariadb mariadb-devel mariadb-libs gcc perl-core perl-App-cpanminus perl-CPAN mod_perl-devel && \
     yum clean all
 
 # Clone the code repo
@@ -28,13 +28,12 @@ RUN git clone $GITHUB_BASE_GIT -b $GITHUB_BASE_BRANCH $BUGZILLA_HOME && \
 
 # Install Perl dependencies
 # Some modules are explicitly installed due to strange dependency issues
-RUN cd $BUGZILLA_HOME \
-    && $CPANM --all
-    && chown -R nginx:nginx $BUGZILLA_HOME
+#RUN cd $BUGZILLA_HOME \
+#    && $CPANM --all
+#    && chown -R bugzilla:bugzilla $BUGZILLA_HOME
 
 ADD scripts /scripts
 RUN chmod +x /scripts/*.sh && \
-    chmod +x /scripts/fastcgi-wrapper.pl && \
     touch /first_run
 
 # Expose our web root and log directories log.
