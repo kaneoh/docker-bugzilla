@@ -29,77 +29,23 @@ EOF
 }
 
 install_bugzilla() {
-  mkdir -p $LOG_DIR/nginx
   mkdir -p $LOG_DIR/bugzilla
-  cat > /etc/supervisor/conf.d/bugzilla.conf <<EOF
-[program:fastcgi_wrapper]
-process_name=%(program_name)s_%(process_num)02d
-numprocs=1
-;socket=tcp://127.0.0.1:8999
-;socket=unix:///var/run/fastcgi-wrapper/fastcgi-wrapper.sock
-;socket_mode=0777
-command=/scripts/fastcgi-wrapper.pl
-user=nginx
-group=nginx
-stdout_logfile=/var/log/bugzilla/fastcgi_wrapper.log
-stderr_logfile=/var/log/bugzilla/fastcgi_wrapper.err
-redirect_stderr=true
-priority=1000
-autostart=true
-autorestart=true
+  cat > /etc/httpd/conf.d/bugzilla.conf <<EOF
+User bugzilla
+Group bugzilla
+ServerName $VIRTUAL_HOST:80
+<VirtualHost *:80>
+    AddHandler cgi-script .cgi
+    ServerName localhost
+    DocumentRoot "${BUGZILLA_HOME}"
+    <Directory "${BUGZILLA_HOME}">
+        DirectoryIndex index.cgi
+        Options Indexes FollowSymLinks ExecCGI
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
 
-[program:nginx]
-priority=100
-command=/usr/sbin/nginx
-
-EOF
-
-  rm -rf /etc/nginx/sites-enabled/no-default
-  cat > /etc/nginx/sites-enabled/default <<EOF
-server {
-  listen        80;
-  server_name   $VIRTUAL_HOST;
-
-  access_log /var/log/bugzilla/access.log;
-  error_log  /var/log/bugzilla/error.log;
-
-  root       ${BUGZILLA_HOME};
-  index      index.cgi index.txt index.html index.xhtml;
-
-  location / {
-    autoindex off;
-  }
-
-  location ~ ^.*\.cgi$ {
-    try_files \$uri =404;
-    gzip off;
-
-    # fastcgi_pass  unix:/var/run/fastcgi-wrapper/fastcgi-wrapper.sock;
-    fastcgi_pass  127.0.0.1:8999;
-    fastcgi_index index.cgi;
-
-    fastcgi_param  QUERY_STRING       \$query_string;
-    fastcgi_param  REQUEST_METHOD     \$request_method;
-    fastcgi_param  CONTENT_TYPE       \$content_type;
-    fastcgi_param  CONTENT_LENGTH     \$content_length;
-
-    fastcgi_param  SCRIPT_FILENAME    \$document_root\$fastcgi_script_name;
-    fastcgi_param  SCRIPT_NAME        \$fastcgi_script_name;
-    fastcgi_param  REQUEST_URI        \$request_uri;
-    fastcgi_param  DOCUMENT_URI       \$document_uri;
-    fastcgi_param  DOCUMENT_ROOT      \$document_root;
-    fastcgi_param  SERVER_PROTOCOL    \$server_protocol;
-
-    fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
-    fastcgi_param  SERVER_SOFTWARE    nginx/\$nginx_version;
-
-    fastcgi_param  REMOTE_ADDR        \$remote_addr;
-    fastcgi_param  REMOTE_PORT        \$remote_port;
-    fastcgi_param  SERVER_ADDR        \$server_addr;
-    fastcgi_param  SERVER_PORT        \$server_port;
-    fastcgi_param  SERVER_NAME        \$server_name;
-  }
-}
 EOF
   cat > /tmp/checksetup_answers.txt <<EOF
 \$answer{'SMTP_SERVER'} = '$SMTP_HOST';
@@ -116,7 +62,7 @@ EOF
 \$answer{'memcached_servers'} = "localhost:11211";
 \$answer{'urlbase'} = '$VIRTUAL_HOST';
 \$answer{'use_suexec'} = '';
-\$answer{'webservergroup'} = 'nginx';
+\$answer{'webservergroup'} = 'bugzilla';
 EOF
 
 }
@@ -200,12 +146,20 @@ stdout_logfile=/var/log/supervisor/memcached.log
 
 EOF
 }
+
+install_httpd() {
+  cat > /etc/supervisor/conf.d/httpd.conf <<EOF
+[program:httpd]
+command=/usr/sbin/httpd -DFOREGROUND
+
+EOF
+}
 pre_start_action() {
   install_supervisor
   install_bugzilla
   check_mysql
   install_memcached
-
+  install_httpd
   cd $BUGZILLA_HOME
   perl checksetup.pl /tmp/checksetup_answers.txt
 }

@@ -1,0 +1,61 @@
+mysql:
+  image: muzili/mariadb:latest
+  volumes:
+    - ./data/mariadb/data:/data
+    - ./data/mariadb/log:/var/log/mysql
+  environment:
+    USER: admin
+    PASS: zV1ATNM95wQs6
+
+ldap:
+  image: muzili/ldap
+  environment:
+    SLAPD_PASSWORD: XZKmSWJzda4Xc
+    SLAPD_DC: dc=example,dc=cn
+    SLAPD_DOMAIN: example.cn
+    SLAPD_ORG: example.cn
+    SLAPD_BINDUSER: binduser
+    SLAPD_BINDPWD: z.IQdT3z8AAOs
+    VIRTUAL_HOST: ldap.example.cn
+  hostname:     ldap.example.cn
+
+ldapadmin:
+  image: muzili/phpldapadmin
+  environment:
+    LDAP_HOST: ldap
+    LDAP_BASE_DN: dc=example,dc=cn
+    LDAP_LOGIN_DN: cn=admin,dc=example,dc=cn
+    LDAP_SERVER_NAME: ldap.example.cn
+    LDAPADMIN_SERVER_NAME: ldapadmin.example.cn
+    VIRTUAL_HOST: ldapadmin.example.cn
+  links:
+    - ldap:ldap
+
+bugzilla:
+  image: muzili/bugzilla
+  links:
+    - ldap:ldap
+    - mysql:mysql
+  environment:
+    VIRTUAL_HOST: bugs.example.cn
+    SMTP_HOST: smtp.mailgun.org
+    SMTP_PORT: 587
+    SMTP_USER: noreply@mg.example.cn
+    SMTP_PASS: TwV/27gm7YQsw
+    SMTP_DOMAIN: bugs.example.cn
+    SMTP_STARTTLS: true
+    SMTP_PROTO: tls
+    LDAP_HOST: ldap
+    LDAP_USER: uid=binduser,ou=users,dc=example,dc=cn
+    LDAP_PASS: z.IQdT3z8AAOs
+    LDAP_BASE: dc=example,dc=cn
+    DB_NAME: bugs
+    DB_USER: bugs
+    DB_PASS: gYNbZIrvHPya6
+    ADMIN_EMAIL: admin@example.com
+    ADMIN_OK: Y
+    ADMIN_PASSWORD: CLnv8HNIAxeT2
+    ADMIN_REALNAME: Joshua Lee
+  volumes:
+    - ./data:/data
+

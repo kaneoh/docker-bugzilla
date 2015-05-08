@@ -17,7 +17,7 @@ ENV CPANM perl $BUGZILLA_HOME/install-module.pl
 
 # Software installation
 RUN yum -y -q update && yum clean all
-RUN yum -y install memcached gcc-c++ gd-devel tar zip gzip bzip2 git fcgi-perl mariadb mariadb-devel mariadb-libs gcc perl-core perl-App-cpanminus perl-CPAN mod_perl-devel && \
+RUN yum -y install httpd memcached gcc-c++ gd-devel tar zip gzip bzip2 git fcgi-perl mariadb mariadb-devel mariadb-libs gcc perl-core perl-App-cpanminus perl-CPAN mod_perl-devel && \
     yum clean all
 
 # Clone the code repo
