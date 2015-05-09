@@ -29,11 +29,13 @@ EOF
 }
 
 install_bugzilla() {
-  mkdir -p $LOG_DIR/bugzilla
-  cat > /etc/httpd/conf.d/bugzilla.conf <<EOF
-User bugzilla
-Group bugzilla
+    mkdir -p $LOG_DIR/httpd
+    chown apache:apache $LOG_DIR/httpd
+    cat > /etc/httpd/conf.d/bugzilla.conf <<EOF
+User apache
+Group apache
 ServerName $VIRTUAL_HOST:80
+
 <VirtualHost *:80>
     AddHandler cgi-script .cgi
     ServerName localhost

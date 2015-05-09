@@ -28,9 +28,9 @@ RUN git clone $GITHUB_BASE_GIT -b $GITHUB_BASE_BRANCH $BUGZILLA_HOME && \
 
 # Install Perl dependencies
 # Some modules are explicitly installed due to strange dependency issues
-#RUN cd $BUGZILLA_HOME \
-#    && $CPANM --all
-#    && chown -R bugzilla:bugzilla $BUGZILLA_HOME
+RUN cd $BUGZILLA_HOME \
+    && $CPANM --all
+    && chown -R apache:apache $BUGZILLA_HOME
 
 ADD scripts /scripts
 RUN chmod +x /scripts/*.sh && \
