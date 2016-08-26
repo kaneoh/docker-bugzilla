@@ -36,6 +36,8 @@ bugzilla:
   links:
     - ldap:ldap
     - mysql:mysql
+  ports:
+    - "8333:80"  
   environment:
     VIRTUAL_HOST: bugs.example.cn
     SMTP_HOST: smtp.mailgun.org
@@ -43,7 +45,7 @@ bugzilla:
     SMTP_USER: noreply@mg.example.cn
     SMTP_PASS: TwV/27gm7YQsw
     SMTP_DOMAIN: bugs.example.cn
-    SMTP_STARTTLS: true
+    SMTP_STARTTLS: "true"
     SMTP_PROTO: tls
     LDAP_HOST: ldap
     LDAP_USER: uid=binduser,ou=users,dc=example,dc=cn
